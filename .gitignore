@@ -1,0 +1,127 @@
+############################################
+# Rider / JetBrains
+############################################
+.idea/
+*.sln.iml
+
+############################################
+# Visual Studio / Rider user files
+############################################
+.vs/
+*.user
+*.userosscache
+*.suo
+*.rsuser
+
+############################################
+# Build results
+############################################
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]ny [Cc]pu/
+[Aa]rchive/
+
+############################################
+# .NET Core / SDK
+############################################
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+############################################
+# NuGet
+############################################
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+.nuget/NuGet.Config
+
+############################################
+# Logs
+############################################
+*.log
+
+############################################
+# Test results
+############################################
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+############################################
+# Coverage tools
+############################################
+coverage/
+coverage.xml
+coverage.json
+*.opencover.xml
+
+############################################
+# OS generated files
+############################################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+############################################
+# Temporary / Backup files
+############################################
+*~
+*.tmp
+*.bak
+*.old
+*.orig
+
+############################################
+# Rider caches & temp
+############################################
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+############################################
+# ASP.NET
+############################################
+appsettings.*.json
+!appsettings.json
+wwwroot/lib/
+
+############################################
+# Entity Framework
+############################################
+*.db
+*.db-shm
+*.db-wal
+
+############################################
+# Secrets
+############################################
+secrets.json
+*.pfx
+*.key
+*.cer
+.env
+.env.*
+
+############################################
+# Publish output
+############################################
+publish/
