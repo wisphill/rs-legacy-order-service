@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LegacyOrderService.Models;
 using LegacyOrderService.Data;
 using LegacyOrderService.Infrastructure;
@@ -23,6 +24,7 @@ namespace LegacyOrderService
     public class CreateOrderSettings : CommandSettings
     {
         [CommandOption("--customer <NAME>")]
+        [DefaultValue("")]
         public string? Customer { get; set; }
 
         [CommandOption("--product <NAME>")]
@@ -40,14 +42,16 @@ namespace LegacyOrderService
             DatabaseInitializer.EnsureDatabase();
 
             // ---- Interactive fallback ----
-            var customer = s.Customer
-                           ?? AnsiConsole.Ask<string>("Customer name:");
+            var customer = !string.IsNullOrWhiteSpace(s.Customer) 
+                ? s.Customer : AnsiConsole.Prompt(
+                               new TextPrompt<string>("Customer name:")
+                                   .AllowEmpty());;
 
             var product = s.Product
-                          ?? AnsiConsole.Ask<string>("Product name:");
+                          ?? AnsiConsole.Ask<string>("Product name (required):");
 
             var quantity = s.Quantity
-                           ?? AnsiConsole.Ask<int>("Quantity:");
+                           ?? AnsiConsole.Ask<int>("Quantity (required):");
 
             Console.WriteLine("Processing order...");
 
