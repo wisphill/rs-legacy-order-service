@@ -13,6 +13,7 @@ using Spectre.Console;
 // TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
 // TODO: add logger
+// TODO: use dependencies injection
 namespace LegacyOrderService
 {
     public class CreateOrderSettings : CommandSettings
