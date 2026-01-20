@@ -37,6 +37,7 @@ namespace LegacyOrderService
     
     public class CreateOrderCommand : Command<CreateOrderSettings>
     {
+        // TODO: cancellationToken for safe shutdown, do we need to support this
         public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
             DatabaseInitializer.EnsureDatabase();
