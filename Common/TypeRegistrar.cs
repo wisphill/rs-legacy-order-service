@@ -5,26 +5,31 @@ namespace LegacyOrderService.Common;
 
 public sealed class TypeRegistrar(IServiceCollection services) : ITypeRegistrar
 {
-    private readonly IServiceCollection _services = services;
-
     public void Register(Type service, Type implementation)
     {
-        _services.AddSingleton(service, implementation);
+        services.AddSingleton(service, implementation);
     }
 
     public void RegisterInstance(Type service, object implementation)
     {
-        _services.AddSingleton(service, implementation);
+        services.AddSingleton(service, implementation);
     }
 
     public void RegisterLazy(Type service, Func<object> factory)
     {
-        _services.AddSingleton(service, _ => factory());
+        services.AddSingleton(service, _ => factory());
     }
 
     public ITypeResolver Build()
     {
-        return new TypeResolver(_services.BuildServiceProvider());
+        var provider = services.BuildServiceProvider(
+            new ServiceProviderOptions
+            {
+                ValidateScopes = true,
+                ValidateOnBuild = true
+            });
+
+        return new TypeResolver(provider);
     }
 }
 
