@@ -7,6 +7,7 @@ public class OrderService(OrderRepository orderRepository)
 {
     public void CreateOrder(Order order)
     {
+        // TODO: add validation here before saving to the database
         decimal total = order.Quantity * order.Price;
 
         Console.WriteLine("Order complete!");

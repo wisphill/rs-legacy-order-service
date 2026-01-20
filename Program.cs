@@ -7,18 +7,12 @@ using Spectre.Console.Cli;
 using System.ComponentModel.DataAnnotations;
 using Spectre.Console;
 
-// TODO: Move these things to the service layer following micro-service design
-// we have: Cli, Application service layer, Repository layer, Data model layer
 // TODO: add test cases for multiple writes
-// TODO: Do we really need a mutex lock when writing to the SQLite database?
-// TODO: consider an well-known package for handing the args
-// TODO: add args validation
-// TODO: add helper text for the man guide
-// TODO: batching accepted, consider to use csv or json as input for the scalability
-// TODO: add all writes into one transaction
+// TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
 // TODO: use the WAL, cache=shared to improve the performance
 // TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
+// TODO: add logger
 namespace LegacyOrderService
 {
     public class CreateOrderSettings : CommandSettings
