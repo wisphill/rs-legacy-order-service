@@ -3,7 +3,7 @@ using LegacyOrderService.Models;
 
 namespace LegacyOrderService.Services;
 
-public class OrderService(OrderRepository orderRepository)
+public class OrderService(IOrderRepository orderRepository)
 {
     public void CreateOrder(Order order)
     {
