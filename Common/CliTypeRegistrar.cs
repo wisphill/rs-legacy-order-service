@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 
 namespace LegacyOrderService.Common;
 
-public sealed class TypeRegistrar(IServiceCollection services) : ITypeRegistrar
+public sealed class CliTypeRegistrar(IServiceCollection services) : ITypeRegistrar
 {
     public void Register(Type service, Type implementation)
     {
@@ -22,6 +22,7 @@ public sealed class TypeRegistrar(IServiceCollection services) : ITypeRegistrar
 
     public ITypeResolver Build()
     {
+        // make sure we do not inject a Scoped into a Singleton
         var provider = services.BuildServiceProvider(
             new ServiceProviderOptions
             {
@@ -29,26 +30,19 @@ public sealed class TypeRegistrar(IServiceCollection services) : ITypeRegistrar
                 ValidateOnBuild = true
             });
 
-        return new TypeResolver(provider);
+        return new CliTypeResolver(provider);
     }
 }
 
-public sealed class TypeResolver : ITypeResolver, IDisposable
+public sealed class CliTypeResolver(ServiceProvider provider) : ITypeResolver, IDisposable
 {
-    private readonly ServiceProvider _provider;
-
-    public TypeResolver(ServiceProvider provider)
-    {
-        _provider = provider;
-    }
-
     public object? Resolve(Type? type)
     {
-        return type == null ? null : _provider.GetService(type);
+        return type == null ? null : provider.GetService(type);
     }
 
     public void Dispose()
     {
-        _provider.Dispose();
+        provider.Dispose();
     }
 }

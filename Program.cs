@@ -80,7 +80,7 @@ namespace LegacyOrderService
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<OrderService>();
 
-            var registrar = new TypeRegistrar(services);
+            var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
             
             app.SetDefaultCommand<CreateOrderCommand>();
