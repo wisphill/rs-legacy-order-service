@@ -30,7 +30,7 @@ namespace LegacyOrderService
             
             // TODO: add script to have a daily backup the db? generate bak files
 
-           string dbPath = DatabaseInitializer.EnsureDatabase();
+           DatabaseInitializer.EnsureDatabase();
             
             Console.WriteLine("Welcome to Order Processor!");
             Console.WriteLine("Enter customer name:");

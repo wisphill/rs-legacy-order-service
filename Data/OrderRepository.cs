@@ -7,30 +7,31 @@ namespace LegacyOrderService.Data
 {
     public class OrderRepository
     {
-        private string _connectionString = $"Data Source={DatabaseInitializer.DbPath}";
-
+        private readonly string _connectionString = $"Data Source={DatabaseInitializer.DbPath}";
 
         public void Save(Order order)
         {
-            // TODO: fix the connection to setup when booting up the application
-            var connection = new SqliteConnection(_connectionString);
-            
+            // auto dispose the connection
+            using var connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            // TODO: it is not working now, fix it to avoid SQL injection
-            var command = connection.CreateCommand();
-            command.CommandText = $@"
-                INSERT INTO Orders (CustomerName, ProductName, Quantity, Price)
-                VALUES ('{order.CustomerName}', '{order.ProductName}', {order.Quantity}, {order.Price})";
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                                  INSERT INTO Orders (CustomerName, ProductName, Quantity, Price)
+                                  VALUES ($customerName, $productName, $quantity, $price);
+                                  """;
 
-            command.ExecuteNonQuery();            
+            command.Parameters.AddWithValue("$customerName", order.CustomerName);
+            command.Parameters.AddWithValue("$productName", order.ProductName);
+            command.Parameters.AddWithValue("$quantity", order.Quantity);
+            command.Parameters.AddWithValue("$price", order.Price);
+
+            command.ExecuteNonQuery();
         }
 
         public void SeedBadData()
         {
-            
-            // TODO: fix the connection to setup when booting up the application
-            var connection = new SqliteConnection(_connectionString);            
+            using var connection = new SqliteConnection(_connectionString);            
             connection.Open();
             var cmd = connection.CreateCommand();
             cmd.CommandText = "INSERT INTO Orders (CustomerName, ProductName, Quantity, Price) VALUES ('John', 'Widget', 9999, 9.99)";
