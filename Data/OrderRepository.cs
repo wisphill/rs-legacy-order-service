@@ -11,10 +11,12 @@ namespace LegacyOrderService.Data
 
         public void Save(Order order)
         {
-            var connection = new SqliteConnection(_connectionString));
+            // TODO: fix the connection to setup when booting up the application
+            var connection = new SqliteConnection(_connectionString);
             
             connection.Open();
 
+            // TODO: it is not working now, fix it to avoid SQL injection
             var command = connection.CreateCommand();
             command.CommandText = $@"
                 INSERT INTO Orders (CustomerName, ProductName, Quantity, Price)
@@ -25,12 +27,13 @@ namespace LegacyOrderService.Data
 
         public void SeedBadData()
         {
+            
+            // TODO: fix the connection to setup when booting up the application
             var connection = new SqliteConnection(_connectionString);            
             connection.Open();
             var cmd = connection.CreateCommand();
             cmd.CommandText = "INSERT INTO Orders (CustomerName, ProductName, Quantity, Price) VALUES ('John', 'Widget', 9999, 9.99)";
             cmd.ExecuteNonQuery();
-            
         }
     }
 }
