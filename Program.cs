@@ -1,6 +1,7 @@
 using System;
 using LegacyOrderService.Models;
 using LegacyOrderService.Data;
+using LegacyOrderService.Infrastructure;
 
 namespace LegacyOrderService
 {
@@ -28,6 +29,9 @@ namespace LegacyOrderService
             // TODO: set WAL mode to the orders.db by using another 
             
             // TODO: add script to have a daily backup the db? generate bak files
+
+           string dbPath = DatabaseInitializer.EnsureDatabase();
+            
             Console.WriteLine("Welcome to Order Processor!");
             Console.WriteLine("Enter customer name:");
             string name = Console.ReadLine();
