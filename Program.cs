@@ -13,7 +13,6 @@ namespace LegacyOrderService
             // we have: Cli, Application service layer, Repository layer, Data model layer
             // TODO: add test cases for multiple writes
             
-            // TODO: Use a for-loop for creating an order
             // TODO: Do we really need a mutex lock when writing to the SQLite database?
             
             // TODO: consider an well-known package for handing the args
@@ -30,7 +29,7 @@ namespace LegacyOrderService
             
             // TODO: add script to have a daily backup the db? generate bak files
 
-           DatabaseInitializer.EnsureDatabase();
+            DatabaseInitializer.EnsureDatabase();
             
             Console.WriteLine("Welcome to Order Processor!");
             Console.WriteLine("Enter customer name:");
@@ -39,8 +38,7 @@ namespace LegacyOrderService
             Console.WriteLine("Enter product name:");
             string product = Console.ReadLine();
             var productRepo = new ProductRepository();
-            double price = productRepo.GetPrice(product);
-
+            decimal price = productRepo.GetPrice(product);
 
             Console.WriteLine("Enter quantity:");
             int qty = Convert.ToInt32(Console.ReadLine());
@@ -54,17 +52,15 @@ namespace LegacyOrderService
             order.CustomerName = name;
             order.ProductName = product;
             order.Quantity = qty;
-            order.Price = 10.0;
+            order.Price = price;
 
-            // TODO: type re-checking for the order, total
-            // TODO: fix total is unused
-            double total = order.Quantity * order.Price;
+            decimal total = order.Quantity * order.Price;
 
             Console.WriteLine("Order complete!");
             Console.WriteLine("Customer: " + order.CustomerName);
             Console.WriteLine("Product: " + order.ProductName);
             Console.WriteLine("Quantity: " + order.Quantity);
-            Console.WriteLine("Total: $" + price);
+            Console.WriteLine("Total: $" + total);
 
             // TODO: replace the Console with logger >> log to file
             Console.WriteLine("Saving order to database...");
