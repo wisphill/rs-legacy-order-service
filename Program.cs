@@ -5,7 +5,9 @@ using LegacyOrderService.Infrastructure;
 using LegacyOrderService.Services;
 using Spectre.Console.Cli;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using LegacyOrderService.Common;
 
 // TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
@@ -13,7 +15,6 @@ using Spectre.Console;
 // TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
 // TODO: add logger
-// TODO: use dependencies injection
 namespace LegacyOrderService
 {
     public class CreateOrderSettings : CommandSettings
@@ -30,7 +31,7 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand : Command<CreateOrderSettings>
+    public class CreateOrderCommand(OrderService orderService) : Command<CreateOrderSettings>
     {
         // TODO: cancellationToken for safe shutdown, do we need to support this
         public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
@@ -61,10 +62,8 @@ namespace LegacyOrderService
                 Quantity = quantity,
                 Price = price
             };
-
-            var repo = new OrderRepository();
-            var service = new OrderService(repo);
-            service.CreateOrder(order);
+            
+            orderService.CreateOrder(order);
 
             Console.WriteLine("Order created successfully.");
             return 0;
@@ -76,7 +75,14 @@ namespace LegacyOrderService
     {
         static int Main(string[] args)
         {
-            var app = new CommandApp();
+            var services = new ServiceCollection();
+            
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<OrderService>();
+
+            var registrar = new CliTypeRegistrar(services);
+            var app = new CommandApp(registrar);
+            
             app.SetDefaultCommand<CreateOrderCommand>();
             // Use the Configure method to define commands and settings
             app.Configure(config =>
