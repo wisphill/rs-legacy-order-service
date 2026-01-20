@@ -1,7 +1,7 @@
-using System;
 using LegacyOrderService.Models;
 using LegacyOrderService.Data;
 using LegacyOrderService.Infrastructure;
+using LegacyOrderService.Services;
 
 namespace LegacyOrderService
 {
@@ -54,19 +54,9 @@ namespace LegacyOrderService
             order.Quantity = qty;
             order.Price = price;
 
-            decimal total = order.Quantity * order.Price;
-
-            Console.WriteLine("Order complete!");
-            Console.WriteLine("Customer: " + order.CustomerName);
-            Console.WriteLine("Product: " + order.ProductName);
-            Console.WriteLine("Quantity: " + order.Quantity);
-            Console.WriteLine("Total: $" + total);
-
-            // TODO: replace the Console with logger >> log to file
-            Console.WriteLine("Saving order to database...");
             var repo = new OrderRepository();
-            repo.Save(order);
-            Console.WriteLine("Done.");
+            var orderService = new OrderService(repo);
+            orderService.CreateOrder(order);
         }
     }
 }
