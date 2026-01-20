@@ -106,6 +106,8 @@ wwwroot/lib/
 
 ############################################
 # Entity Framework
+# don't ignore the template database, 
+# ignore generated .db-shm, db-wal
 ############################################
 *.db-shm
 *.db-wal

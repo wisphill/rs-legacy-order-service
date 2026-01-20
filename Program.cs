@@ -77,8 +77,8 @@ namespace LegacyOrderService
         {
             var services = new ServiceCollection();
             
-            services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<OrderService>();
+            services.AddSingleton<IOrderRepository, OrderRepository>();
+            services.AddSingleton<OrderService>();
 
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
