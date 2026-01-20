@@ -1,4 +1,3 @@
-using System;
 using LegacyOrderService.Infrastructure;
 using Microsoft.Data.Sqlite;
 using LegacyOrderService.Models;
