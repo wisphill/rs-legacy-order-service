@@ -40,7 +40,7 @@ namespace LegacyOrderService
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
                                new TextPrompt<string>("Customer name:")
-                                   .AllowEmpty());;
+                                   .AllowEmpty());
 
             var product = s.Product
                           ?? AnsiConsole.Ask<string>("Product name (required):");
@@ -84,6 +84,18 @@ namespace LegacyOrderService
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
             
+            // Create a cancellation token source to handle Ctrl+C
+            var cancellationTokenSource = new CancellationTokenSource();
+            System.Console.CancelKeyPress += (_, e) =>
+            {
+                e.Cancel = true; // Prevent immediate process termination
+                cancellationTokenSource.Cancel();
+                // TODO: check this and consider to use async instead blocking the main thread
+                Thread.Sleep(5000);
+                System.Console.WriteLine("Cancellation requested...");
+                e.Cancel = false;
+            };
+
             app.SetDefaultCommand<CreateOrderCommand>();
             // Use the Configure method to define commands and settings
             app.Configure(config =>
@@ -101,7 +113,7 @@ namespace LegacyOrderService
             databaseInitializer.EnsureDatabase();
 
             logger.LogInformation("Application started");
-            return app.Run(args);
+            return app.Run(args, cancellationTokenSource.Token);
         }
     }
 }
