@@ -37,8 +37,6 @@ namespace LegacyOrderService
         // TODO: cancellationToken for safe shutdown, do we need to support this
         public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
-            DatabaseInitializer.EnsureDatabase();
-
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
@@ -81,6 +79,7 @@ namespace LegacyOrderService
             
             services.AddSingleton<IOrderRepository, OrderRepository>();
             services.AddSingleton<OrderService>();
+            services.AddSingleton<DatabaseInitializer>();
 
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
@@ -92,7 +91,16 @@ namespace LegacyOrderService
                 config.AddCommand<CreateOrderCommand>("create")
                     .WithDescription("Create a new order");
             });
+            
+            
+            var serviceProvider = services.BuildServiceProvider();
+            var logger = serviceProvider
+                .GetRequiredService<ILogger<Program>>();
+            var databaseInitializer = serviceProvider
+                .GetRequiredService<DatabaseInitializer>();
+            databaseInitializer.EnsureDatabase();
 
+            logger.LogInformation("Application started");
             return app.Run(args);
         }
 
