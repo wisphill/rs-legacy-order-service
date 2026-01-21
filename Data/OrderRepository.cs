@@ -8,13 +8,13 @@ namespace LegacyOrderService.Data
     {
         private readonly string _connectionString = $"Data Source={DatabaseInitializer.DbPath}";
 
-        public void Save(Order order)
+        public async Task Save(Order order, CancellationToken ct)
         {
             // auto dispose the connection
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync(ct);
 
-            using var command = connection.CreateCommand();
+            await using var command = connection.CreateCommand();
             command.CommandText = """
                                   INSERT INTO Orders (CustomerName, ProductName, Quantity, Price)
                                   VALUES ($customerName, $productName, $quantity, $price);
@@ -25,7 +25,7 @@ namespace LegacyOrderService.Data
             command.Parameters.AddWithValue("$quantity", order.Quantity);
             command.Parameters.AddWithValue("$price", order.Price);
 
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync(ct);
         }
 
         public void SeedBadData()

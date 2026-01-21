@@ -3,6 +3,6 @@ using LegacyOrderService.Models;
 namespace LegacyOrderService.Data;
 
 public interface IOrderRepository
-{
-    void Save(Order order);
+{ 
+    Task Save(Order order, CancellationToken ct);
 }

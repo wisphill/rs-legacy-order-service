@@ -6,7 +6,7 @@ namespace LegacyOrderService.Services;
 
 public class OrderService(IOrderRepository orderRepository, ILogger<OrderService> logger)
 {
-    public void CreateOrder(Order order)
+    public async Task CreateOrder(Order order, CancellationToken ct)
     {
         // TODO: add validation here before saving to the database
         decimal total = order.Quantity * order.Price;
@@ -17,6 +17,6 @@ public class OrderService(IOrderRepository orderRepository, ILogger<OrderService
         logger.LogInformation("Total: $" + total);
 
         logger.LogInformation("Saving order to database...");
-        orderRepository.Save(order);
+        await orderRepository.Save(order, ct);
     }
 }

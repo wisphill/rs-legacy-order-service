@@ -12,8 +12,6 @@ using Microsoft.Extensions.Logging;
 
 // TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
-// TODO: use the WAL, cache=shared to improve the performance
-// TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
 namespace LegacyOrderService
 {
@@ -31,11 +29,12 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : Command<CreateOrderSettings>
+    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
     {
         // TODO: cancellationToken for safe shutdown, do we need to support this
-        public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteAsync(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
+            await Task.Delay(10000, cancellationToken);
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
@@ -61,8 +60,7 @@ namespace LegacyOrderService
                 Price = price
             };
             
-            orderService.CreateOrder(order);
-
+            await orderService.CreateOrder(order, cancellationToken);
             logger.LogInformation("Order created successfully.");
             return 0;
         }
@@ -71,7 +69,7 @@ namespace LegacyOrderService
 
     class Program
     {
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             var services = new ServiceCollection();
             
@@ -80,22 +78,10 @@ namespace LegacyOrderService
                 .AddSingleton<IOrderRepository, OrderRepository>()
                 .AddSingleton<OrderService>()
                 .AddSingleton<DatabaseInitializer>();
-
+        
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
             
-            // Create a cancellation token source to handle Ctrl+C
-            var cancellationTokenSource = new CancellationTokenSource();
-            System.Console.CancelKeyPress += (_, e) =>
-            {
-                e.Cancel = true; // Prevent immediate process termination
-                cancellationTokenSource.Cancel();
-                // TODO: check this and consider to use async instead blocking the main thread
-                Thread.Sleep(5000);
-                System.Console.WriteLine("Cancellation requested...");
-                e.Cancel = false;
-            };
-
             app.SetDefaultCommand<CreateOrderCommand>();
             // Use the Configure method to define commands and settings
             app.Configure(config =>
@@ -104,16 +90,36 @@ namespace LegacyOrderService
                     .WithDescription("Create a new order");
             });
             
-            
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider
                 .GetRequiredService<ILogger<Program>>();
             var databaseInitializer = serviceProvider
                 .GetRequiredService<DatabaseInitializer>();
             databaseInitializer.EnsureDatabase();
-
+        
             logger.LogInformation("Application started");
-            return app.Run(args, cancellationTokenSource.Token);
+            
+            // Create a cancellation token source to handle Ctrl+C
+            var cancellationTokenSource = new CancellationTokenSource();
+            // TODO: test this
+            // Wire up Console.CancelKeyPress to trigger cancellation
+            Console.CancelKeyPress += (_, e) =>
+            {
+                e.Cancel = true; // Prevent immediate process termination
+                cancellationTokenSource.Cancel();
+                logger.LogInformation("Cancellation requested...");
+                Thread.Sleep(5000);
+                // force exit and terminate the thread
+                e.Cancel = false;
+            };
+            
+            // Wire up to process exit (e.g., SIGTERM, system shutdown)
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                cancellationTokenSource.Cancel();
+            };
+            
+            return await app.RunAsync(args, cancellationTokenSource.Token);
         }
     }
 }
