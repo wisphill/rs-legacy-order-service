@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using LegacyOrderService.Common;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 // TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
@@ -75,11 +74,12 @@ namespace LegacyOrderService
         static int Main(string[] args)
         {
             var services = new ServiceCollection();
-            SetupLogger(services);
             
-            services.AddSingleton<IOrderRepository, OrderRepository>();
-            services.AddSingleton<OrderService>();
-            services.AddSingleton<DatabaseInitializer>();
+            services
+                .AddLogger()
+                .AddSingleton<IOrderRepository, OrderRepository>()
+                .AddSingleton<OrderService>()
+                .AddSingleton<DatabaseInitializer>();
 
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
@@ -102,27 +102,6 @@ namespace LegacyOrderService
 
             logger.LogInformation("Application started");
             return app.Run(args);
-        }
-
-        static void SetupLogger(IServiceCollection serviceCollections)
-        {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.Console(
-                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}"
-                )
-                .WriteTo.File(
-                    "logs/app-.log",
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7
-                )
-                .CreateLogger();
-            
-            serviceCollections.AddLogging(builder =>
-            {
-                builder.ClearProviders();
-                builder.AddSerilog(dispose: true);
-            });
         }
     }
 }
