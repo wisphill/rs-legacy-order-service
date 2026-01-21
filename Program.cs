@@ -8,13 +8,13 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using LegacyOrderService.Common;
+using Microsoft.Extensions.Logging;
 
 // TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
 // TODO: use the WAL, cache=shared to improve the performance
 // TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
-// TODO: add logger
 namespace LegacyOrderService
 {
     public class CreateOrderSettings : CommandSettings
@@ -31,13 +31,11 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand(OrderService orderService) : Command<CreateOrderSettings>
+    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : Command<CreateOrderSettings>
     {
         // TODO: cancellationToken for safe shutdown, do we need to support this
         public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
-            DatabaseInitializer.EnsureDatabase();
-
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
@@ -50,7 +48,7 @@ namespace LegacyOrderService
             var quantity = s.Quantity
                            ?? AnsiConsole.Ask<int>("Quantity (required):");
 
-            Console.WriteLine("Processing order...");
+            logger.LogInformation("Processing order...");
 
             var productRepo = new ProductRepository();
             var price = productRepo.GetPrice(product);
@@ -65,7 +63,7 @@ namespace LegacyOrderService
             
             orderService.CreateOrder(order);
 
-            Console.WriteLine("Order created successfully.");
+            logger.LogInformation("Order created successfully.");
             return 0;
         }
     }
@@ -77,8 +75,11 @@ namespace LegacyOrderService
         {
             var services = new ServiceCollection();
             
-            services.AddSingleton<IOrderRepository, OrderRepository>();
-            services.AddSingleton<OrderService>();
+            services
+                .AddLogger()
+                .AddSingleton<IOrderRepository, OrderRepository>()
+                .AddSingleton<OrderService>()
+                .AddSingleton<DatabaseInitializer>();
 
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
@@ -90,7 +91,16 @@ namespace LegacyOrderService
                 config.AddCommand<CreateOrderCommand>("create")
                     .WithDescription("Create a new order");
             });
+            
+            
+            var serviceProvider = services.BuildServiceProvider();
+            var logger = serviceProvider
+                .GetRequiredService<ILogger<Program>>();
+            var databaseInitializer = serviceProvider
+                .GetRequiredService<DatabaseInitializer>();
+            databaseInitializer.EnsureDatabase();
 
+            logger.LogInformation("Application started");
             return app.Run(args);
         }
     }

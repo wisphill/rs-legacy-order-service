@@ -1,23 +1,22 @@
 using LegacyOrderService.Data;
 using LegacyOrderService.Models;
+using Microsoft.Extensions.Logging;
 
 namespace LegacyOrderService.Services;
 
-public class OrderService(IOrderRepository orderRepository)
+public class OrderService(IOrderRepository orderRepository, ILogger<OrderService> logger)
 {
     public void CreateOrder(Order order)
     {
         // TODO: add validation here before saving to the database
         decimal total = order.Quantity * order.Price;
+        logger.LogInformation("Order complete!");
+        logger.LogInformation("Customer: " + order.CustomerName);
+        logger.LogInformation("Product: " + order.ProductName);
+        logger.LogInformation("Quantity: " + order.Quantity);
+        logger.LogInformation("Total: $" + total);
 
-        Console.WriteLine("Order complete!");
-        Console.WriteLine("Customer: " + order.CustomerName);
-        Console.WriteLine("Product: " + order.ProductName);
-        Console.WriteLine("Quantity: " + order.Quantity);
-        Console.WriteLine("Total: $" + total);
-
-        // TODO: replace the Console with logger >> log to file
-        Console.WriteLine("Saving order to database...");
+        logger.LogInformation("Saving order to database...");
         orderRepository.Save(order);
     }
 }

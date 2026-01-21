@@ -1,15 +1,16 @@
 using LegacyOrderService.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LegacyOrderService.Infrastructure;
 
-public static class DatabaseInitializer
+public class DatabaseInitializer(ILogger<DatabaseInitializer> logger)
 {
     public static string DbPath => GetDbPath();
     
-    public static string EnsureDatabase()
+    public void EnsureDatabase()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        Console.WriteLine($"Serve the database at: {appData}");
+        logger.LogInformation($"Serve the database at: {appData}");
         
         var appDir = Path.Combine(appData, AppConstants.AppName);
         // create dir if it's not existed
@@ -32,8 +33,6 @@ public static class DatabaseInitializer
             
             File.Copy(templatePath, dbPath);
         }
-        
-        return dbPath;
     }
 
     private static string GetDbPath()
