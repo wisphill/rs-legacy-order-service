@@ -19,6 +19,26 @@
 - As cli application, we should use the single database target. I replaced the database source in the built folder with the datasource in the local machine application data directory
 - Enable WAL mode to increase the performance, it's safe to use with non-network storage volume
 - Make sure if it's hosted on the EC2 machine, the data folder is mounted to external volume
+### Interactive mode
+- The application can be run in interactive mode, allowing users to input orders manually via the console.
+### CLI mode
+- The application can be executed with command-line arguments to process orders automatically by running 
+```shell
+./bin/Release/net8.0/LegacyOrderService --customer Phil --product Widget --quantity 3
+```
+## How to run
+```shell
+## Build
+make build
+## Run interactively
+make run 
+## Build to specified platform
+make build-arch ARCH=linux-x64
+## Run test
+make test
+## Run for specified tests
+make test-specific  TEST=LegacyOrderService.Services.OrderServiceTests.CreateOrder_ValidProduct_SavesOrder
+```
 
 ## Deployment Notes
 - For best performance, use non-network storage volumes.

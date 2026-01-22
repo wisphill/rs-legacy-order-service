@@ -1,4 +1,3 @@
-<!-- TODO: update to have the smallest binary file -->
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -6,8 +5,20 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 
+    <!-- Enables compiler optimizations for release builds, improving runtime performance -->
+    <Optimize>true</Optimize>
+    <!-- Allow .NET runtime to use tiered compilation, to replace less-optimized code with more-optimized code at runtime -->
+    <TieredCompilation>true</TieredCompilation>
+    <!-- Enable Profile-Guided Optimization, hot path optimization for better performance based on runtime profiles -->
+    <TieredPGO>true</TieredPGO>
+    <!-- Produces precompiled native intermediate language code to speed up application startup time, publish optimization -->
+    <ReadyToRun>true</ReadyToRun>
+
+    <!-- Size optimizations to remove unused code during build -->
+    <TrimMode>partial</TrimMode>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="tests/**" />
     <None Include="tests/**" />
