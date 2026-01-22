@@ -13,28 +13,28 @@ test-specific:
 
 # Build the project
 # Usage: make build
-build:
+build: clean
 	dotnet build -c Release
 
-build-arch:
+build-arch: clean
 	dotnet build --runtime $(ARCH) -c Release
 
-debug:
+debug: clean
 	dotnet run -c Debug
 	
 # Run the project
 # Usage: make run
-run:
+run: clean
 	dotnet run -c Release
 
-publish:
+publish: clean
 	rm -rf ./publish
 	dotnet publish -c Release -o ./publish --self-contained true
 
-publish-arch:
+publish-arch: clean
 	rm -rf ./publish
 	dotnet publish -c Release -o ./publish --self-contained true -r $(ARCH)
 
 clean:
-    rm -rf bin obj publish
+	rm -rf bin obj publish
 	dotnet clean
