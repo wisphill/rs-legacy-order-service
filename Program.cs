@@ -11,7 +11,6 @@ using Spectre.Console;
 using LegacyOrderService.Common;
 using Microsoft.Extensions.Logging;
 
-// TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
 // TODO: add script to have a daily backup the db? generate bak files
 namespace LegacyOrderService
