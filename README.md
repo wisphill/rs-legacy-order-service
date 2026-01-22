@@ -4,6 +4,7 @@
   <img src="https://img.shields.io/github/v/release/wisphill/rs-legacy-order-service?color=blue" alt="Latest Release" />
   <img src="https://img.shields.io/github/license/wisphill/rs-legacy-order-service" alt="License" />
   <img src="https://img.shields.io/github/stars/wisphill/rs-legacy-order-service?style=social" alt="Stars" />
+  <img src="https://img.shields.io/github/actions/workflow/status/wisphill/rs-legacy-order-service/dotnet.yml" alt="CI Status" />
 </p>
 
 ## Overview
