@@ -20,5 +20,7 @@ namespace LegacyOrderService.Data
 
             throw new Exception("Product not found");
         }
+        
+        public string[] GetProductNames()  => _productPrices.Keys.ToArray();
     }
 }

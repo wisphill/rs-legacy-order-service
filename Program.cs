@@ -40,11 +40,14 @@ namespace LegacyOrderService
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
-                               new TextPrompt<string>("Customer name:")
+                               new TextPrompt<string>("Customer name (optional):")
                                    .AllowEmpty());
 
-            var product = s.Product
-                          ?? AnsiConsole.Ask<string>("Product name (required):");
+            var product = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Select your [green]product[/]?")
+                    .AddChoices(productRepository.GetProductNames()));
+            AnsiConsole.MarkupLine($"Selected Product: [yellow]{product}[/]");
 
             var quantity = s.Quantity
                            ?? AnsiConsole.Ask<int>("Quantity (required):");
