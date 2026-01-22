@@ -30,26 +30,31 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
+    public class CreateOrderCommand(
+        OrderService orderService, 
+        IProductRepository productRepository,
+        ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
     {
         public override async Task<int> ExecuteAsync(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
-                               new TextPrompt<string>("Customer name:")
+                               new TextPrompt<string>("Customer name (optional):")
                                    .AllowEmpty());
 
-            var product = s.Product
-                          ?? AnsiConsole.Ask<string>("Product name (required):");
+            var product = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Select your [green]product[/]?")
+                    .AddChoices(productRepository.GetProductNames()));
+            AnsiConsole.MarkupLine($"Selected Product: [yellow]{product}[/]");
 
             var quantity = s.Quantity
                            ?? AnsiConsole.Ask<int>("Quantity (required):");
 
             logger.LogInformation("Processing order...");
 
-            var productRepo = new ProductRepository();
-            var price = productRepo.GetPrice(product);
+            var price = await productRepository.GetPrice(product);
 
             var order = new Order
             {
@@ -75,6 +80,7 @@ namespace LegacyOrderService
             services
                 .AddLogger()
                 .AddSingleton<IOrderRepository, OrderRepository>()
+                .AddSingleton<IProductRepository, ProductRepository>()
                 .AddSingleton<OrderService>()
                 .AddSingleton<DatabaseInitializer>();
         
