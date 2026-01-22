@@ -31,10 +31,8 @@ namespace LegacyOrderService
     
     public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
     {
-        // TODO: cancellationToken for safe shutdown, do we need to support this
         public override async Task<int> ExecuteAsync(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
-            await Task.Delay(10000, cancellationToken);
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
@@ -99,27 +97,28 @@ namespace LegacyOrderService
         
             logger.LogInformation("Application started");
             
-            // Create a cancellation token source to handle Ctrl+C
+            // Create a cancellation token source
             var cancellationTokenSource = new CancellationTokenSource();
-            // TODO: test this
-            // Wire up Console.CancelKeyPress to trigger cancellation
             Console.CancelKeyPress += (_, e) =>
             {
-                e.Cancel = true; // Prevent immediate process termination
-                cancellationTokenSource.Cancel();
-                logger.LogInformation("Cancellation requested...");
-                Thread.Sleep(5000);
-                // force exit and terminate the thread
-                e.Cancel = false;
+                logger.LogInformation("Cancellation requested. Gracefully shutting down application...");
+                GracefulShutdown(cancellationTokenSource);
             };
             
             // Wire up to process exit (e.g., SIGTERM, system shutdown)
             AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             {
-                cancellationTokenSource.Cancel();
+                logger.LogInformation("Getting SIGTERM. Gracefully shutting down application...");
+                GracefulShutdown(cancellationTokenSource);
             };
             
             return await app.RunAsync(args, cancellationTokenSource.Token);
+        }
+
+        static void GracefulShutdown(CancellationTokenSource cancellationTokenSource)
+        {
+            cancellationTokenSource.Cancel();
+            Thread.Sleep(AppConstants.GracefulShutdownTimeoutMilliSecs);
         }
     }
 }
