@@ -58,7 +58,7 @@ public class OrderRepositoryTests
         {
             typeof(OrderRepository)
                 .GetField("_connectionString", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .SetValue(this, connectionString);
+                ?.SetValue(this, connectionString);
         }
     }
 }
