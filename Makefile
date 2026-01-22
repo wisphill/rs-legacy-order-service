@@ -18,3 +18,23 @@ build:
 
 build-arch:
 	dotnet build --runtime $(ARCH) -c Release
+
+debug:
+	dotnet run -c Debug
+	
+# Run the project
+# Usage: make run
+run:
+	dotnet run -c Release
+
+publish:
+	rm -rf ./publish
+	dotnet publish -c Release -o ./publish --self-contained true
+
+publish-arch:
+	rm -rf ./publish
+	dotnet publish -c Release -o ./publish --self-contained true -r $(ARCH)
+
+clean:
+    rm -rf bin obj publish
+	dotnet clean

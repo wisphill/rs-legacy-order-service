@@ -42,10 +42,11 @@ namespace LegacyOrderService
                                new TextPrompt<string>("Customer name (optional):")
                                    .AllowEmpty());
 
-            var product = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select your [green]product[/]?")
-                    .AddChoices(productRepository.GetProductNames()));
+            var product = s.Product
+                          ?? AnsiConsole.Prompt(
+                              new SelectionPrompt<string>()
+                                  .Title("Select your [green]product[/]?")
+                                  .AddChoices(productRepository.GetProductNames()));
             AnsiConsole.MarkupLine($"Selected Product: [yellow]{product}[/]");
 
             var quantity = s.Quantity
