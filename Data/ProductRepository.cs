@@ -1,11 +1,7 @@
 ﻿// Data/ProductRepository.cs
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace LegacyOrderService.Data
 {
-    public class ProductRepository
+    public class ProductRepository: IProductRepository
     {
         private readonly Dictionary<string, decimal> _productPrices = new()
         {
@@ -14,11 +10,10 @@ namespace LegacyOrderService.Data
             ["Doohickey"] = 8.75m
         };
 
-        public decimal GetPrice(string productName)
+        public async Task<decimal> GetPrice(string productName)
         {
-            // Simulate an expensive lookup
-            // TODO: check this and consider to use async instead blocking the main thread
-            Thread.Sleep(500);
+            // Simulate an expensive lookup using async instead blocking the main thread
+            await Task.Delay(500);
 
             if (_productPrices.TryGetValue(productName, out var price))
                 return price;

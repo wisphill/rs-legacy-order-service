@@ -30,7 +30,10 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
+    public class CreateOrderCommand(
+        OrderService orderService, 
+        IProductRepository productRepository,
+        ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
     {
         public override async Task<int> ExecuteAsync(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
@@ -48,8 +51,7 @@ namespace LegacyOrderService
 
             logger.LogInformation("Processing order...");
 
-            var productRepo = new ProductRepository();
-            var price = productRepo.GetPrice(product);
+            var price = await productRepository.GetPrice(product);
 
             var order = new Order
             {
@@ -75,6 +77,7 @@ namespace LegacyOrderService
             services
                 .AddLogger()
                 .AddSingleton<IOrderRepository, OrderRepository>()
+                .AddSingleton<IProductRepository, ProductRepository>()
                 .AddSingleton<OrderService>()
                 .AddSingleton<DatabaseInitializer>();
         
