@@ -102,7 +102,7 @@ namespace LegacyOrderService
                 .GetRequiredService<DatabaseInitializer>();
             databaseInitializer.EnsureDatabase();
         
-            logger.LogInformation("Application started");
+            logger.LogInformation("Console application started");
             
             // Create a cancellation token source
             var cancellationTokenSource = new CancellationTokenSource();

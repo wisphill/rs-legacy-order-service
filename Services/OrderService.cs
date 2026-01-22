@@ -20,11 +20,8 @@ public class OrderService(
         }
         
         decimal total = order.Quantity * order.Price;
-        logger.LogInformation("Order complete!");
-        logger.LogInformation("Customer: " + order.CustomerName);
-        logger.LogInformation("Product: " + order.ProductName);
-        logger.LogInformation("Quantity: " + order.Quantity);
-        logger.LogInformation("Total: $" + total);
+        logger.LogInformation(
+            $"Order complete! Customer: {order.CustomerName}, Product: {order.ProductName}, Quantity: {order.Quantity}, Total: ${total}");
 
         logger.LogInformation("Saving order to database...");
         await orderRepository.Save(order, ct);
