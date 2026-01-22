@@ -5,6 +5,7 @@ using LegacyOrderService.Infrastructure;
 using LegacyOrderService.Services;
 using Spectre.Console.Cli;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using LegacyOrderService.Common;
@@ -105,13 +106,12 @@ namespace LegacyOrderService
                 GracefulShutdown(cancellationTokenSource);
             };
             
-            // Wire up to process exit (e.g., SIGTERM, system shutdown)
-            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx =>
             {
                 logger.LogInformation("Getting SIGTERM. Gracefully shutting down application...");
                 GracefulShutdown(cancellationTokenSource);
-            };
-            
+            });
+
             return await app.RunAsync(args, cancellationTokenSource.Token);
         }
 
