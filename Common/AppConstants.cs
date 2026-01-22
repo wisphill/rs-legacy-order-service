@@ -10,4 +10,8 @@ public static class AppConstants
     // Database
     // ─────────────────────────────
     public const string DatabaseFileName = "orders.db";
+    // ─────────────────────────────
+    // Graceful shutdown timeout
+    // ─────────────────────────────
+    public const int GracefulShutdownTimeoutMilliSecs = 10000;
 }

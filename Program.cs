@@ -5,6 +5,7 @@ using LegacyOrderService.Infrastructure;
 using LegacyOrderService.Services;
 using Spectre.Console.Cli;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using LegacyOrderService.Common;
@@ -12,8 +13,6 @@ using Microsoft.Extensions.Logging;
 
 // TODO: add test cases for multiple writes
 // TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
-// TODO: use the WAL, cache=shared to improve the performance
-// TODO: set WAL mode to the orders.db by using another 
 // TODO: add script to have a daily backup the db? generate bak files
 namespace LegacyOrderService
 {
@@ -31,16 +30,15 @@ namespace LegacyOrderService
         public int? Quantity { get; set; }
     }
     
-    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : Command<CreateOrderSettings>
+    public class CreateOrderCommand(OrderService orderService, ILogger<CreateOrderCommand> logger) : AsyncCommand<CreateOrderSettings>
     {
-        // TODO: cancellationToken for safe shutdown, do we need to support this
-        public override int Execute(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteAsync(CommandContext context, CreateOrderSettings s, CancellationToken cancellationToken)
         {
             // ---- Interactive fallback ----
             var customer = !string.IsNullOrWhiteSpace(s.Customer) 
                 ? s.Customer : AnsiConsole.Prompt(
                                new TextPrompt<string>("Customer name:")
-                                   .AllowEmpty());;
+                                   .AllowEmpty());
 
             var product = s.Product
                           ?? AnsiConsole.Ask<string>("Product name (required):");
@@ -61,8 +59,7 @@ namespace LegacyOrderService
                 Price = price
             };
             
-            orderService.CreateOrder(order);
-
+            await orderService.CreateOrder(order, cancellationToken);
             logger.LogInformation("Order created successfully.");
             return 0;
         }
@@ -71,7 +68,7 @@ namespace LegacyOrderService
 
     class Program
     {
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             var services = new ServiceCollection();
             
@@ -80,7 +77,7 @@ namespace LegacyOrderService
                 .AddSingleton<IOrderRepository, OrderRepository>()
                 .AddSingleton<OrderService>()
                 .AddSingleton<DatabaseInitializer>();
-
+        
             var registrar = new CliTypeRegistrar(services);
             var app = new CommandApp(registrar);
             
@@ -92,16 +89,36 @@ namespace LegacyOrderService
                     .WithDescription("Create a new order");
             });
             
-            
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider
                 .GetRequiredService<ILogger<Program>>();
             var databaseInitializer = serviceProvider
                 .GetRequiredService<DatabaseInitializer>();
             databaseInitializer.EnsureDatabase();
-
+        
             logger.LogInformation("Application started");
-            return app.Run(args);
+            
+            // Create a cancellation token source
+            var cancellationTokenSource = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, e) =>
+            {
+                logger.LogInformation("Cancellation requested. Gracefully shutting down application...");
+                GracefulShutdown(cancellationTokenSource);
+            };
+            
+            PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx =>
+            {
+                logger.LogInformation("Getting SIGTERM. Gracefully shutting down application...");
+                GracefulShutdown(cancellationTokenSource);
+            });
+
+            return await app.RunAsync(args, cancellationTokenSource.Token);
+        }
+
+        static void GracefulShutdown(CancellationTokenSource cancellationTokenSource)
+        {
+            cancellationTokenSource.Cancel();
+            Thread.Sleep(AppConstants.GracefulShutdownTimeoutMilliSecs);
         }
     }
 }
