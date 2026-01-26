@@ -28,8 +28,13 @@ namespace LegacyOrderService.Data
             await command.ExecuteNonQueryAsync(ct);
         }
 
+        // This method is only for development testing purposes to seed bad data
+        // prevent it from running in production
         public void SeedBadData()
         {
+            if (Environment.GetEnvironmentVariable("ENVIRONMENT") != "Development")
+                return;
+            
             using var connection = new SqliteConnection(_connectionString);            
             connection.Open();
             var cmd = connection.CreateCommand();
