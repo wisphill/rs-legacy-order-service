@@ -85,7 +85,7 @@ namespace LegacyOrderService
 
             logger.LogInformation("Processing order...");
 
-            var price = await productRepository.GetPrice(product);
+            var price = await productRepository.GetPrice(product).ConfigureAwait(false);
 
             var order = new Order
             {
@@ -95,7 +95,7 @@ namespace LegacyOrderService
                 Price = price
             };
             
-            await orderService.CreateOrder(order, cancellationToken);
+            await orderService.CreateOrder(order, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Order created successfully.");
             return 0;
         }

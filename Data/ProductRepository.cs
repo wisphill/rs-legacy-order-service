@@ -13,7 +13,7 @@ namespace LegacyOrderService.Data
         public async Task<decimal> GetPrice(string productName)
         {
             // Simulate an expensive lookup using async instead blocking the main thread
-            await Task.Delay(500);
+            await Task.Delay(500).ConfigureAwait(false);
 
             if (_productPrices.TryGetValue(productName, out var price))
                 return price;
@@ -30,7 +30,7 @@ namespace LegacyOrderService.Data
         
         public async Task<bool> HasProduct(string productName)
         {
-            await Task.Delay(100); // Simulate async work
+            await Task.Delay(100).ConfigureAwait(false); // Simulate async work
             return _productPrices.ContainsKey(productName);
         }
     }
