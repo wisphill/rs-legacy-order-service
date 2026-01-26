@@ -11,8 +11,9 @@ using Spectre.Console;
 using LegacyOrderService.Common;
 using Microsoft.Extensions.Logging;
 
-// TODO: batching accepted, consider to use csv or json as input for the scalability, all writes into one transaction
-// TODO: add script to have a daily backup the db? generate bak files
+// Some features can be added later:
+// 1. batching, consider to use csv or json as input for the scalability, all writes into one transaction
+// 2. add script to have a daily backup the db to generate bak files
 namespace LegacyOrderService
 {
     public class CreateOrderSettings : CommandSettings
@@ -42,12 +43,57 @@ namespace LegacyOrderService
                                new TextPrompt<string>("Customer name (optional):")
                                    .AllowEmpty());
 
-            var product = s.Product
-                          ?? AnsiConsole.Prompt(
-                              new SelectionPrompt<string>()
-                                  .Title("Select your [green]product[/]?")
-                                  .AddChoices(productRepository.GetProductNames()));
-            AnsiConsole.MarkupLine($"Selected Product: [yellow]{product}[/]");
+            string? product = null;
+            if (s.Product != null)
+            {
+                product = s.Product;
+            }
+            else
+            {
+                var initialChoices = (await productRepository.SearchByText(string.Empty)).ToList();
+                initialChoices.Insert(0, "([grey]Search again...[/])");
+                while (product == null)
+                {
+                    var selection = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Select a product or search:")
+                            .PageSize(10)
+                            .AddChoices(initialChoices));
+
+                    if (selection != "([grey]Search again...[/])")
+                    {
+                        product = selection;
+                        break;
+                    }
+
+                    var search = AnsiConsole.Prompt(
+                        new TextPrompt<string>("[bold]Search product name:[/] ")
+                            .AllowEmpty());
+                    var matches = await productRepository.SearchByText(search);
+
+                    if (!matches.Any())
+                    {
+                        AnsiConsole.MarkupLine("[red]⚠ No matches in database. Please refine your search.[/]");
+                        continue;
+                    }
+
+                    var choices = matches.ToList();
+                    choices.Insert(0, "([grey]Search again...[/])");
+
+                    selection = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title($"Found [green]{matches.Count}[/] matches. Select one:")
+                            .PageSize(10)
+                            .AddChoices(choices));
+
+                    if (selection != "([grey]Search again...[/])")
+                    {
+                        product = selection;
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"Confirmed: [yellow]{product}[/]");
+            }
 
             var quantity = s.Quantity
                            ?? AnsiConsole.Ask<int>("Quantity (required):");

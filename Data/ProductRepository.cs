@@ -21,6 +21,21 @@ namespace LegacyOrderService.Data
             throw new Exception("Product not found");
         }
         
-        public string[] GetProductNames()  => _productPrices.Keys.ToArray();
+        public async Task<List<string>> SearchByText(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await Task.FromResult(_productPrices.Keys.Take(10).ToList());
+
+            return await Task.FromResult(_productPrices.Keys
+                .Where(key => key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList());
+        }
+
+        
+        public async Task<bool> HasProduct(string productName)
+        {
+            await Task.Delay(100); // Simulate async work
+            return _productPrices.ContainsKey(productName);
+        }
     }
 }

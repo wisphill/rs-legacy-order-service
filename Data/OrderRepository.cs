@@ -20,7 +20,7 @@ namespace LegacyOrderService.Data
                                   VALUES ($customerName, $productName, $quantity, $price);
                                   """;
 
-            command.Parameters.AddWithValue("$customerName", order.CustomerName);
+            command.Parameters.AddWithValue("$customerName", (object?)order.CustomerName ?? DBNull.Value);
             command.Parameters.AddWithValue("$productName", order.ProductName);
             command.Parameters.AddWithValue("$quantity", order.Quantity);
             command.Parameters.AddWithValue("$price", order.Price);
@@ -28,8 +28,13 @@ namespace LegacyOrderService.Data
             await command.ExecuteNonQueryAsync(ct);
         }
 
+        // This method is only for development testing purposes to seed bad data
+        // prevent it from running in production
         public void SeedBadData()
         {
+            if (Environment.GetEnvironmentVariable("ENVIRONMENT") != "Development")
+                return;
+            
             using var connection = new SqliteConnection(_connectionString);            
             connection.Open();
             var cmd = connection.CreateCommand();
