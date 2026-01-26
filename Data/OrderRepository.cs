@@ -20,7 +20,7 @@ namespace LegacyOrderService.Data
                                   VALUES ($customerName, $productName, $quantity, $price);
                                   """;
 
-            command.Parameters.AddWithValue("$customerName", order.CustomerName);
+            command.Parameters.AddWithValue("$customerName", (object?)order.CustomerName ?? DBNull.Value);
             command.Parameters.AddWithValue("$productName", order.ProductName);
             command.Parameters.AddWithValue("$quantity", order.Quantity);
             command.Parameters.AddWithValue("$price", order.Price);
