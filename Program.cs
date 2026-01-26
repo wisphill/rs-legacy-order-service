@@ -43,12 +43,42 @@ namespace LegacyOrderService
                                new TextPrompt<string>("Customer name (optional):")
                                    .AllowEmpty());
 
-            var product = s.Product
-                          ?? AnsiConsole.Prompt(
-                              new SelectionPrompt<string>()
-                                  .Title("Select your [green]product[/]?")
-                                  .AddChoices(productRepository.GetProductNames()));
-            AnsiConsole.MarkupLine($"Selected Product: [yellow]{product}[/]");
+            string? product = null;
+            if (s.Product != null)
+            {
+                product = s.Product;
+            }
+            else
+            {
+                while (product == null)
+                {
+                    var search = AnsiConsole.Ask<string>("[bold]Search product name:[/] ");
+                    var matches = productRepository.SearchByText(search);
+
+                    if (!matches.Any())
+                    {
+                        AnsiConsole.MarkupLine("[red]⚠ No matches in database. Please refine your search.[/]");
+                        continue;
+                    }
+
+                    // Add a "Search again" option to the list so they aren't stuck
+                    var choices = matches.ToList();
+                    choices.Insert(0, "([grey]Search again...[/])");
+
+                    var selection = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title($"Found [green]{matches.Count}[/] matches. Select one:")
+                            .PageSize(10)
+                            .AddChoices(choices));
+
+                    if (selection != "([grey]Search again...[/])")
+                    {
+                        product = selection;
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"Confirmed: [yellow]{product}[/]");
+            }
 
             var quantity = s.Quantity
                            ?? AnsiConsole.Ask<int>("Quantity (required):");

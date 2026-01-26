@@ -17,7 +17,7 @@ public class OrderServiceTests
         var orderRepoMock = new Mock<IOrderRepository>();
         var productRepoMock = new Mock<IProductRepository>();
         var loggerMock = new Mock<ILogger<OrderService>>();
-        productRepoMock.Setup(x => x.GetProductNames()).Returns(new[] { "Widget", "Gadget" });
+        productRepoMock.Setup(x => x.HasProduct("Widget")).ReturnsAsync(true);
 
         var service = new OrderService(orderRepoMock.Object, productRepoMock.Object, loggerMock.Object);
 
@@ -26,7 +26,7 @@ public class OrderServiceTests
 
         // Assert
         orderRepoMock.Verify(x => x.Save(order, It.IsAny<CancellationToken>()), Times.Once);
-        productRepoMock.Verify(x => x.GetProductNames(), Times.Once);
+        productRepoMock.Verify(x => x.HasProduct("Widget"), Times.Once);
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class OrderServiceTests
         var orderRepoMock = new Mock<IOrderRepository>();
         var productRepoMock = new Mock<IProductRepository>();
         var loggerMock = new Mock<ILogger<OrderService>>();
-        productRepoMock.Setup(x => x.GetProductNames()).Returns(new[] { "Widget", "Gadget" });
-
+        productRepoMock.Setup(x => x.HasProduct("Unknown")).ReturnsAsync(false);
+        
         var service = new OrderService(orderRepoMock.Object, productRepoMock.Object, loggerMock.Object);
 
         // Act & Assert
