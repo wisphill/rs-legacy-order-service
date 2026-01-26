@@ -50,10 +50,26 @@ namespace LegacyOrderService
             }
             else
             {
+                var initialChoices = (await productRepository.SearchByText(string.Empty).ConfigureAwait(false)).ToList();
+                initialChoices.Insert(0, "([grey]Search again...[/])");
                 while (product == null)
                 {
-                    var search = AnsiConsole.Ask<string>("[bold]Search product name:[/] ");
-                    var matches = productRepository.SearchByText(search);
+                    var selection = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Select a product or search:")
+                            .PageSize(10)
+                            .AddChoices(initialChoices));
+
+                    if (selection != "([grey]Search again...[/])")
+                    {
+                        product = selection;
+                        break;
+                    }
+
+                    var search = AnsiConsole.Prompt(
+                        new TextPrompt<string>("[bold]Search product name:[/] ")
+                            .AllowEmpty());
+                    var matches = await productRepository.SearchByText(search).ConfigureAwait(false);
 
                     if (!matches.Any())
                     {
@@ -61,11 +77,10 @@ namespace LegacyOrderService
                         continue;
                     }
 
-                    // Add a "Search again" option to the list so they aren't stuck
                     var choices = matches.ToList();
                     choices.Insert(0, "([grey]Search again...[/])");
 
-                    var selection = AnsiConsole.Prompt(
+                    selection = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title($"Found [green]{matches.Count}[/] matches. Select one:")
                             .PageSize(10)
