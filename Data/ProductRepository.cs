@@ -13,7 +13,7 @@ namespace LegacyOrderService.Data
         public async Task<decimal> GetPrice(string productName)
         {
             // Simulate an expensive lookup using async instead blocking the main thread
-            await Task.Delay(500).ConfigureAwait(false);
+            await Task.Delay(500);
 
             if (_productPrices.TryGetValue(productName, out var price))
                 return price;
@@ -24,18 +24,17 @@ namespace LegacyOrderService.Data
         public async Task<List<string>> SearchByText(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
-                return await Task.FromResult(_productPrices.Keys.Take(10).ToList()).ConfigureAwait(false);
+                return await Task.FromResult(_productPrices.Keys.Take(10).ToList());
 
             return await Task.FromResult(_productPrices.Keys
                 .Where(key => key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList())
-                .ConfigureAwait(false);
+                .ToList());
         }
 
         
         public async Task<bool> HasProduct(string productName)
         {
-            await Task.Delay(100).ConfigureAwait(false); // Simulate async work
+            await Task.Delay(100); // Simulate async work
             return _productPrices.ContainsKey(productName);
         }
     }

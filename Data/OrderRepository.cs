@@ -12,7 +12,7 @@ namespace LegacyOrderService.Data
         {
             // auto dispose the connection
             await using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync(ct).ConfigureAwait(false);
+            await connection.OpenAsync(ct);
 
             await using var command = connection.CreateCommand();
             command.CommandText = """
@@ -25,7 +25,7 @@ namespace LegacyOrderService.Data
             command.Parameters.AddWithValue("$quantity", order.Quantity);
             command.Parameters.AddWithValue("$price", order.Price);
 
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            await command.ExecuteNonQueryAsync(ct);
         }
 
         // This method is only for development testing purposes to seed bad data

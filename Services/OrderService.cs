@@ -13,7 +13,7 @@ public class OrderService(
     {
         logger.LogInformation("Creating an order...");
         // sample validation for the product name
-        var hasProduct = await productRepository.HasProduct(order.ProductName).ConfigureAwait(false);
+        var hasProduct = await productRepository.HasProduct(order.ProductName);
         if (!hasProduct)
         {
             throw new ArgumentException($"Product name {order.ProductName} does not exist.");

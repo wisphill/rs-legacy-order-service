@@ -50,7 +50,7 @@ namespace LegacyOrderService
             }
             else
             {
-                var initialChoices = (await productRepository.SearchByText(string.Empty).ConfigureAwait(false)).ToList();
+                var initialChoices = (await productRepository.SearchByText(string.Empty)).ToList();
                 initialChoices.Insert(0, "([grey]Search again...[/])");
                 while (product == null)
                 {
@@ -69,7 +69,7 @@ namespace LegacyOrderService
                     var search = AnsiConsole.Prompt(
                         new TextPrompt<string>("[bold]Search product name:[/] ")
                             .AllowEmpty());
-                    var matches = await productRepository.SearchByText(search).ConfigureAwait(false);
+                    var matches = await productRepository.SearchByText(search);
 
                     if (!matches.Any())
                     {
@@ -100,7 +100,7 @@ namespace LegacyOrderService
 
             logger.LogInformation("Processing order...");
 
-            var price = await productRepository.GetPrice(product).ConfigureAwait(false);
+            var price = await productRepository.GetPrice(product);
 
             var order = new Order
             {
@@ -110,7 +110,7 @@ namespace LegacyOrderService
                 Price = price
             };
             
-            await orderService.CreateOrder(order, cancellationToken).ConfigureAwait(false);
+            await orderService.CreateOrder(order, cancellationToken);
             logger.LogInformation("Order created successfully.");
             return 0;
         }
